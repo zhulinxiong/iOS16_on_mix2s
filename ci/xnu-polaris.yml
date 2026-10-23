@@ -38,17 +38,13 @@ jobs:
     # (Xcode 16's iig emits IORPC.kernelContent, which this xnu lacks)
     runs-on: macos-13
     timeout-minutes: 120
-steps:
-  - uses: actions/checkout@v4
-- name: Select Xcode 14.3.1
-    uses: maxim-lobanov/setup-xcode@v1
-    with:
-      xcode-version: '14.3.1'
-  - name: Override DEVELOPER_DIR
-    run: echo "DEVELOPER_DIR=$(xcode-select -p)" >> $GITHUB_ENV
+    steps:
+      - uses: actions/checkout@v4
 
-
-
+      - name: Select Xcode 14.3.1
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '14.3.1'
 
       - name: Fetch build script
         run: |
@@ -70,20 +66,16 @@ steps:
           sudo chmod +x /usr/local/bin/xcodes
           sw_vers
           ls -d /Applications/Xcode*.app
-          XC=$(ls -d /Applications/Xcode_*.app | sort -V | head -1)
-          echo "DEVELOPER_DIR=$XC/Contents/Developer" >> "$GITHUB_ENV"
-          sudo xcode-select -s "$XC"
+          # 强制使用已切换的 Xcode 14.3.1，不再自动找最新版本
+          echo "DEVELOPER_DIR=$(xcode-select -p)" >> "$GITHUB_ENV"
           xcodebuild -version
           xcrun --find iig
 
       - name: Build
         working-directory: dxb
         env:
-        XCODE_VERSION: "14.3.1"
-      NO_CODESIGN: "1"
-      # keep going after errors so one run reports e
-      MAKEFLAGS: ${{ inputs.keep_going == 'false' && '-k' || '' }}
-    run: bash build.sh
+          XCODE_VERSION: "14.3.1"
+          NO_CODESIGN: "1"
           # keep going after errors so one run reports every compile failure
           MAKEFLAGS: ${{ inputs.keep_going == 'false' && '' || '-k' }}
         run: bash build.sh
