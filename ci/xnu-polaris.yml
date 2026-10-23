@@ -66,7 +66,7 @@ jobs:
           sudo chmod +x /usr/local/bin/xcodes
           sw_vers
           ls -d /Applications/Xcode*.app
-          # 强制使用已切换的 Xcode 14.3.1，不再自动找最新版本
+          # 强制锁定当前选中的 Xcode 14.3.1 路径
           echo "DEVELOPER_DIR=$(xcode-select -p)" >> "$GITHUB_ENV"
           xcodebuild -version
           xcrun --find iig
@@ -76,6 +76,8 @@ jobs:
         env:
           XCODE_VERSION: "14.3.1"
           NO_CODESIGN: "1"
+          # 硬编码锁定 Xcode 14.3.1 路径，防止脚本自动切回 15.0
+          DEVELOPER_DIR: /Applications/Xcode_shturl.cc/Contents/Developer
           # keep going after errors so one run reports every compile failure
           MAKEFLAGS: ${{ inputs.keep_going == 'false' && '' || '-k' }}
         run: bash build.sh
